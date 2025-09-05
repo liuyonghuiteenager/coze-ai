@@ -35,6 +35,9 @@ public class CozeChatController {
 //    }
 
 
+    /**
+     * 发起对话
+     */
     @PostMapping("/stream")
     public ResultUtil<CozeChatResp> chatStream(@RequestBody CozeChatReq cozeChatReq) {
         CozeChatResp cozeChatResp = cozeChatService.chat(cozeChatReq);

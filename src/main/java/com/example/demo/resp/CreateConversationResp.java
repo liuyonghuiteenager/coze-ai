@@ -4,17 +4,13 @@ import lombok.Data;
 
 @Data
 public class CreateConversationResp {
-    private int code;
-    private String msg;
-    private ConversationData  data;
 
-    @Data
-    public static class ConversationData  {
-        private String id;        // conversation_id
-        private String bot_id;
-        private String user_id;
-        private int status;
-        private long create_time;
-        private long update_time;
-    }
+    private String Id;
+    private String name;
+    private String connector_id;
+    private String last_section_id;
+    private Object meta_data;
+    private String creator_id;
+    private Integer created_at;
+    private Integer updated_at;
 }

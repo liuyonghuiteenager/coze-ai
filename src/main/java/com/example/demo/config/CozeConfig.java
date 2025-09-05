@@ -9,8 +9,19 @@ import org.springframework.stereotype.Component;
 @Data
 public class CozeConfig {
 
+    /**
+     * coze路径
+     */
     private String apiUrl;
+
+    /**
+     * coze token
+     */
     private String apiKey;
+
+    /**
+     * votId
+     */
     private String botId;
 
 }

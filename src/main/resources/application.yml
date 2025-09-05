@@ -1,7 +1,24 @@
+# 服务端口
 server:
   port: 8080
+
+# 当前环境 dev, test, prod
+spring:
+  profiles:
+    active: dev
 
 coze:
   api-url: https://api.coze.cn
   api-key: pat_lpzNwtEml9UMS8cCwZgmlVXuYPSgCdAxOvYm1zkYmIdMiHapqe0z6tW1TxEZSqMF
   bot-id: 7540290482912509979
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    org.springframework: WARN
+  file:
+    name: ./logs/app.log
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"

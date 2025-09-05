@@ -7,7 +7,7 @@ import com.example.demo.resp.CozeChatResp;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -20,12 +20,20 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Slf4j
 @Service
-@RequiredArgsConstructor
 public class CozeChatService {
 
     private final CozeConfig cozeConfig;
-    private final WebClient webClient = WebClient.builder().baseUrl("https://api.coze.cn").build();
+
+    private final WebClient webClient;
+
+    public CozeChatService(CozeConfig cozeConfig) {
+        this.cozeConfig = cozeConfig;
+        this.webClient = WebClient.builder()
+                .baseUrl(cozeConfig.getApiUrl())
+                .build();
+    }
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -42,14 +50,14 @@ public class CozeChatService {
         cozeChatReq.setAuto_save_history(true);
         cozeChatReq.setAdditional_messages(messages);
 
-        // 打印请求体
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            String json = mapper.writeValueAsString(cozeChatReq);
-            System.out.println("发送的 JSON 请求体：\n" + json);
-        } catch (Exception e) {
-            System.err.println("序列化失败：" + e.getMessage());
-        }
+//        // 打印请求体
+//        ObjectMapper mapper = new ObjectMapper();
+//        try {
+//            String json = mapper.writeValueAsString(cozeChatReq);
+//            log.info("发送的 JSON 请求体：{}", json);
+//        } catch (Exception e) {
+//            log.info("序列化失败：{}", e.getMessage());
+//        }
 
         return webClient.post()
                 .uri("/v3/chat?conversation_id=" + conversationId)
@@ -59,14 +67,14 @@ public class CozeChatService {
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve()
                 .bodyToFlux(String.class)
-                .doOnNext(line -> System.out.println("[RAW] " + line))
+                .doOnNext(line -> log.info("[RAW] {}", line))
                 .map(this::extractContent)
                 .handle((String content, SynchronousSink<String> sink) -> {
                     // 过滤空值
                     if (content == null || content.trim().isEmpty()) {
                         return;
                     }
-                    System.out.println(content);
+                    log.info("流内容: {}", content);
                     // 发射有效内容
                     sink.next(content);
                     // 收到结束信号时终止流

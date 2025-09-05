@@ -2,47 +2,74 @@ package com.example.demo.service;
 
 import com.example.demo.config.CozeConfig;
 import com.example.demo.req.CreateConversationReq;
+import com.example.demo.resp.CozeResp;
 import com.example.demo.resp.CreateConversationResp;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class ConversationService {
 
-    private final CozeConfig cozeConfig; // 包含 api-key, bot-id 等
+    private final CozeConfig cozeConfig;
 
-    private final WebClient webClient = WebClient.builder().baseUrl("https://api.coze.cn").build();
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * 创建新会话
      */
-    public String createConversation(String userId) {
-        String url = "/v1/conversation/create";
+    public CreateConversationResp createConversation(String userId) {
+        String url = cozeConfig.getApiUrl()+"/v1/conversation/create";
 
-        CreateConversationReq request = new CreateConversationReq();
-        request.setBot_id(cozeConfig.getBotId());
-        request.setUser_id(userId);
+        // 设置请求头
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(cozeConfig.getApiKey());
+
+        // 组装请求参数
+        CreateConversationReq req = new CreateConversationReq();
+        req.setBot_id(cozeConfig.getBotId());
+        req.setUser_id(userId);
+
+        HttpEntity<CreateConversationReq> entity = new HttpEntity<>(req, headers);
 
         try {
-            CreateConversationResp response = webClient.post()
-                    .uri(url)
-                    .header("Authorization", "Bearer " + cozeConfig.getApiKey())
-                    .header("Content-Type", "application/json")
-                    .bodyValue(request)
-                    .retrieve()
-                    .bodyToMono(CreateConversationResp.class)
-                    .block(); // 阻塞等待结果（简单场景可用）
+            // 发送请求
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
-            if (response != null && response.getCode() == 0) {
-                return response.getData().getId(); // 返回 conversation_id
-            } else {
-                throw new RuntimeException("创建会话失败: " + response.getMsg());
+            CozeResp<CreateConversationResp> result = objectMapper.readValue(response.getBody(),
+                    new TypeReference<CozeResp<CreateConversationResp>>() {
+                    }
+            );
+
+            // 1. 空响应检查
+            if (result == null) {
+                throw new RuntimeException("Coze API 返回空响应");
             }
 
+            // 2. 业务状态码检查（Coze 的 code 字段）
+            if (result.getCode() != 0) {
+                String errorMsg = result.getMsg() != null ? result.getMsg() : "Unknown error";
+                String logid = result.getDetail() != null ? result.getDetail().getLogid() : "N/A";
+                throw new RuntimeException("Coze API Error [code=" + result.getCode() + "]: " + errorMsg + " [LogID: " + logid + "]");
+            }
+
+            return result.getData();
+
+        } catch (RuntimeException re) {
+            // 已包装的业务异常，直接抛出
+            throw re;
         } catch (Exception e) {
-            throw new RuntimeException("调用创建会话接口异常: " + e.getMessage(), e);
+            // 其他异常（网络、JSON 解析等）
+            throw new RuntimeException("调用 Coze API 失败: " + e.getMessage(), e);
         }
     }
 }

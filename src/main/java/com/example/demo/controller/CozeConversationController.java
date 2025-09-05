@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.resp.CreateConversationResp;
 import com.example.demo.resp.ResultUtil;
 import com.example.demo.service.ConversationService;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,7 @@ public class CozeConversationController {
      * 创建新会话
      */
     @PostMapping("/create")
-    public ResultUtil<String> create(@RequestParam(required = false) String userId) {
-        String conversationId = conversationService.createConversation(userId);
-        return ResultUtil.success(conversationId);
+    public ResultUtil<CreateConversationResp> create(@RequestParam(required = false) String userId) {
+        return ResultUtil.success(conversationService.createConversation(userId));
     }
 }

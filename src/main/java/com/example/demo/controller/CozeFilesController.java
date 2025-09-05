@@ -19,6 +19,11 @@ public class CozeFilesController {
 
     private final CozeFilesService cozeFilesService;
 
+    /**
+     * 文件上传
+     * @param file
+     * @return
+     */
     @PostMapping("/upload")
     public ResultUtil<FileUploadResp> uploadFiles(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
@@ -48,6 +53,11 @@ public class CozeFilesController {
         }
     }
 
+    /**
+     * 查看文件详情
+     * @param fileId
+     * @return
+     */
     @GetMapping("/retrieve/{fileId}")
     public ResultUtil<FileUploadResp> retrieveFiles(@PathVariable String fileId) {
         return ResultUtil.success(cozeFilesService.retrieveFiles(fileId));

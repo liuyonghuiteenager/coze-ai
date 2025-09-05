@@ -21,16 +21,31 @@ public class CozeKnowledgeController {
     private final CozeKnowledgeService cozeKnowledgeService;
 
 
+    /**
+     * 创建知识库文件
+     * @param createDocumentReq
+     * @return
+     */
     @PostMapping("/create")
     public ResultUtil<List<DocumentInfos>> createDocument(@RequestBody CreateDocumentReq createDocumentReq) {
         return ResultUtil.success(cozeKnowledgeService.createDocument(createDocumentReq));
     }
 
+    /**
+     * 查看知识库文件
+     * @param viewDocumentReq
+     * @return
+     */
     @PostMapping("/view")
     public ResultUtil<List<DocumentInfos>> viewDocument(@RequestBody ViewDocumentReq viewDocumentReq) {
         return ResultUtil.success(cozeKnowledgeService.viewDocument(viewDocumentReq));
     }
 
+    /**
+     * 删除知识库文件
+     * @param documentIds
+     * @return
+     */
     @PostMapping("/delete")
     public ResultUtil<String> deleteDocument(@RequestBody List<String> documentIds) {
         return ResultUtil.success(cozeKnowledgeService.deleteDocument(documentIds));
