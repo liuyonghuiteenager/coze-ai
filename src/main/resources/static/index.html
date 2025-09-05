@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI平台 - 创建会话</title>
+    <style>
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background: #eef2f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            padding: 40px 60px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        button {
+            padding: 12px 30px;
+            font-size: 16px;
+            background: #409eff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #66b1ff;
+        }
+        button:disabled {
+            background: #a0cfff;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>AI 对话平台</h1>
+    <p>点击下方按钮创建新会话，开启智能对话之旅</p>
+    <button id="createBtn" onclick="createConversation()">创建会话</button>
+</div>
+
+<script>
+    async function createConversation() {
+        const btn = document.getElementById("createBtn");
+        btn.disabled = true;
+        btn.textContent = "创建中...";
+
+        try {
+            const res = await fetch("http://localhost:8080/ai/conversation/create", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const data = await res.json();
+
+            if (data.success && data.data) {
+                const conversationId = data.data;
+                // 跳转到对话页，带上 conversationId
+                window.location.href = `chat.html?conversationId=${conversationId}`;
+            } else {
+                alert("创建失败：" + data.message);
+                btn.disabled = false;
+                btn.textContent = "创建会话";
+            }
+        } catch (error) {
+            alert("请求失败：" + error.message);
+            btn.disabled = false;
+            btn.textContent = "创建会话";
+        }
+    }
+</script>
+</body>
+</html>

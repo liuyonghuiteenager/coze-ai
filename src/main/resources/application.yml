@@ -1,0 +1,7 @@
+server:
+  port: 8080
+
+coze:
+  api-url: https://api.coze.cn
+  api-key: pat_lpzNwtEml9UMS8cCwZgmlVXuYPSgCdAxOvYm1zkYmIdMiHapqe0z6tW1TxEZSqMF
+  bot-id: 7540290482912509979

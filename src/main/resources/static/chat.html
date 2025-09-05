@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI 对话</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background: #f4f6f8;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+        .header {
+            background: #409eff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #fafafa;
+        }
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            line-height: 1.5;
+        }
+        .user {
+            align-self: flex-end;
+            background: #409eff;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+        .assistant {
+            align-self: flex-start;
+            background: #e9e9eb;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+        .input-area {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            background: white;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+        #sendBtn {
+            margin-left: 10px;
+            padding: 0 20px;
+            background: #409eff;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        #sendBtn:disabled {
+            background: #a0cfff;
+            cursor: not-allowed;
+        }
+        .typing {
+            color: #888;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header" id="header">AI 对话助手</div>
+    <div class="messages" id="messages">
+        <div class="message assistant">你好！我是你的AI助手，请问有什么可以帮你的？</div>
+    </div>
+    <div class="input-area">
+        <input type="text" id="messageInput" placeholder="输入你的问题..." autofocus />
+        <button id="sendBtn">发送</button>
+    </div>
+</div>
+
+<script>
+    const messagesEl = document.getElementById("messages");
+    const inputEl = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const header = document.getElementById("header");
+
+    // 从 URL 获取 conversationId
+    const urlParams = new URLSearchParams(window.location.search);
+    const conversationId = urlParams.get("conversationId");
+
+    if (!conversationId) {
+        alert("缺少会话ID，请从首页创建会话");
+        window.location.href = "index.html";
+    } else {
+        header.textContent = `会话 ID: ${conversationId}`;
+    }
+
+    const API_BASE = "http://localhost:8080";
+    const CHAT_STREAM_ENDPOINT = `${API_BASE}/ai/chat/stream/new`;
+    const USER_ID = "123456"; // 可替换为登录用户
+
+    // 发送消息
+    async function sendMessage() {
+        const userMessage = inputEl.value.trim();
+        if (!userMessage) return;
+
+        inputEl.value = "";
+        sendBtn.disabled = true;
+
+        // 添加用户消息
+        addMessage("user", userMessage);
+
+        // 流式获取 AI 响应
+        await fetchAIResponse(userMessage);
+
+        sendBtn.disabled = false;
+        inputEl.focus();
+    }
+
+    // 添加消息
+    function addMessage(role, content) {
+        const msgEl = document.createElement("div");
+        msgEl.className = `message ${role}`;
+        msgEl.textContent = content;
+        messagesEl.appendChild(msgEl);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    // 流式请求 AI 回复
+    async function fetchAIResponse(userMessage) {
+        const typing = document.createElement("div");
+        typing.className = "message assistant typing";
+        typing.textContent = "AI 正在思考...";
+        messagesEl.appendChild(typing);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        try {
+            const response = await fetch(CHAT_STREAM_ENDPOINT, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    user_id: USER_ID,
+                    conversationId: conversationId,
+                    message: userMessage
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            // 直接解析整个响应体为 JSON 对象
+            const data = await response.json();
+
+            if (data.success && data.data?.content) {
+                // 显示完整回复
+                typing.remove();
+                addMessage("assistant", data.data.content);
+            } else {
+                typing.textContent = "AI 没有返回内容。";
+            }
+        } catch (error) {
+            typing.textContent = `【错误】${error.message}`;
+            console.error("请求失败:", error);
+        }
+    }
+
+    // 绑定事件
+    sendBtn.addEventListener("click", sendMessage);
+    inputEl.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") sendMessage();
+    });
+
+    inputEl.focus();
+</script>
+</body>
+</html>
