@@ -19,6 +19,7 @@
 
     <properties>
         <java.version>17</java.version>
+        <mybatis-plus.version>3.5.7</mybatis-plus.version>
     </properties>
 
     <dependencies>
@@ -39,6 +40,21 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- MySql依赖 -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.33</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- MyBatis-Plus Starter -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>${mybatis-plus.version}</version>
         </dependency>
 
         <!-- Coze 官方或自研 SDK -->

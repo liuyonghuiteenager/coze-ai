@@ -1,99 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- 定义日志输出格式 -->
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
-
-    <!-- 开发环境日志路径 -->
-    <springProfile name="dev,test">
-        <property name="LOG_PATH" value="./logs"/>
-    </springProfile>
-
-    <!-- 生产环境日志路径 -->
-    <springProfile name="prod">
-        <property name="LOG_PATH" value="/var/logs/myapp"/>
-    </springProfile>
+    <!-- 定义日志输出路径 -->
+    <property name="LOG_PATH" value="./logs"/>
+    <property name="ARCHIVE_PATH" value="${LOG_PATH}/archived"/>
 
     <!-- 控制台输出 -->
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-            <charset>UTF-8</charset>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 按天滚动的日志文件（INFO 级别） -->
-    <appender name="File-Info" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- INFO 日志文件输出 -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/info.log</file>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- 按天生成日志文件 -->
-            <fileNamePattern>${LOG_PATH}/archived/info-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <!-- 保存30天 -->
-            <maxHistory>30</maxHistory>
-            <!-- 单个文件最大100MB -->
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>100MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-            <totalSizeCap>10GB</totalSizeCap>
-        </rollingPolicy>
-        <!-- 只记录 INFO 及以上，但不包括 WARN/ERROR -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 滚动文件名模式：必须包含 %d 和 %i -->
+            <fileNamePattern>${ARCHIVE_PATH}/info-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 每个日志文件最大 100MB -->
+            <maxFileSize>100MB</maxFileSize>
+            <!-- 日志文件总大小限制 1GB -->
+            <totalSizeCap>1GB</totalSizeCap>
+            <!-- 保留 30 天 -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
     </appender>
 
-    <!-- 错误日志（ERROR 级别） -->
-    <appender name="File-Error" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <!-- ERROR 日志文件输出 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/error.log</file>
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/archived/error-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxHistory>30</maxHistory>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>100MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-        </rollingPolicy>
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
             <onMismatch>DENY</onMismatch>
         </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${ARCHIVE_PATH}/error-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <totalSizeCap>1GB</totalSizeCap>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
     </appender>
 
-    <!-- 异步日志（可选，提升性能） -->
-    <appender name="Async-Info" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="File-Info"/>
-        <queueSize>1024</queueSize>
-        <discardingThreshold>0</discardingThreshold>
-        <includeCallerData>false</includeCallerData>
-    </appender>
-
-    <appender name="Async-Error" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="File-Error"/>
-    </appender>
-
-    <!-- Root Logger -->
+    <!-- Spring Boot 默认日志级别 -->
     <root level="INFO">
         <appender-ref ref="Console"/>
-        <appender-ref ref="Async-Info"/>
-        <appender-ref ref="Async-Error"/>
+        <appender-ref ref="INFO_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
     </root>
-
-    <!-- 指定某个包的日志级别 -->
-    <logger name="com.example.demo" level="DEBUG" additivity="false">
-        <appender-ref ref="Console"/>
-        <appender-ref ref="Async-Info"/>
-    </logger>
-
-    <logger name="org.springframework" level="WARN"/>
-    <logger name="org.hibernate" level="WARN"/>
-
 </configuration>

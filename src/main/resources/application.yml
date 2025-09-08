@@ -6,12 +6,40 @@ server:
 spring:
   profiles:
     active: dev
+# MySql数据源
+  datasource:
+    url: jdbc:mysql://localhost:3306/dome?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
 
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    callSettersOnNulls: true
+    cache-enabled: false
+    map-underscore-to-camel-case: true
+    default-enum-type-handler: org.apache.ibatis.type.EnumOrdinalTypeHandler
+#    日志打印配置
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 控制台打印 SQL
+  mapper-locations: classpath*:mapper/**/*.xml               # Mapper XML 文件位置
+  type-aliases-package: com.example.demo.entity
+  global-config:
+    db-config:
+      table-underline: true
+      capital-mode: true
+      id-type: auto
+      table-prefix: t_
+      logic-delete-value: 1 # 逻辑已删除值(默认为 1)
+      logic-not-delete-value: 0 # 逻辑未删除值(默认为 0)
+
+# Coze常量配置
 coze:
   api-url: https://api.coze.cn
   api-key: pat_lpzNwtEml9UMS8cCwZgmlVXuYPSgCdAxOvYm1zkYmIdMiHapqe0z6tW1TxEZSqMF
   bot-id: 7540290482912509979
 
+# 日志配置
 logging:
   level:
     root: INFO
