@@ -26,7 +26,7 @@ public class ConversationService {
     /**
      * 创建新会话
      */
-    public CreateConversationResp createConversation(String userId) {
+    public CreateConversationResp createConversation(CreateConversationReq req) {
         String url = cozeConfig.getApiUrl()+"/v1/conversation/create";
 
         // 设置请求头
@@ -35,9 +35,7 @@ public class ConversationService {
         headers.setBearerAuth(cozeConfig.getApiKey());
 
         // 组装请求参数
-        CreateConversationReq req = new CreateConversationReq();
         req.setBot_id(cozeConfig.getBotId());
-        req.setUser_id(userId);
 
         HttpEntity<CreateConversationReq> entity = new HttpEntity<>(req, headers);
 
