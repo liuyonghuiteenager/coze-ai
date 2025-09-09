@@ -72,7 +72,7 @@
             const data = await res.json();
 
             if (data.success && data.data) {
-                const conversationId = data.data;
+                const conversationId = data.data.id;
                 // 跳转到对话页，带上 conversationId
                 window.location.href = `chat.html?conversationId=${conversationId}`;
             } else {

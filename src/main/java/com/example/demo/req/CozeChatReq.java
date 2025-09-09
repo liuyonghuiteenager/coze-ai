@@ -14,6 +14,7 @@ public class CozeChatReq {
     @JsonProperty("user_id")
     private String user_id;
 
+    @JsonProperty("conversation_id")
     private String conversationId;
 
     private String message;

@@ -18,4 +18,5 @@ public class UserServiceImpl extends ServiceImpl<UserDao, User> implements UserS
     public List<User> getUserList() {
         return list();
     }
+
 }

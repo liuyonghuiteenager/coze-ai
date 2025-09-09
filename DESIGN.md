@@ -8,3 +8,7 @@
     test: 添加或修改测试
     chore: 构建工具或依赖更新
     revert: 回滚提交
+
+二, 部署命令
+
+    nohup java -jar demo-0.0.1-SNAPSHOT.jar --spring.profiles.active=dev > app.log 2>&1 &
