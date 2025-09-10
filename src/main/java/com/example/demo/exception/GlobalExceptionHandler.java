@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import javax.naming.AuthenticationException;
+
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
@@ -26,6 +28,12 @@ public class GlobalExceptionHandler {
     public ResultUtil<Void> handleException(Exception e) {
         log.error("【系统异常】", e);
         return ResultUtil.error("系统繁忙，请稍后再试");
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseEntity<ResultUtil<?>> handleAuthException(AuthenticationException e) {
+        return ResponseEntity.status(401).body(ResultUtil.error("认证失败"));
     }
 
     /**
